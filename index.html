@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGPA Calculator</title>
+    <style>
+        body {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 600px; /* Set a maximum width for the table */
+            margin: 20px;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: center;
+            padding: 8px;
+        }
+	.div1{
+         margin-right:50px;
+	 width:auto
+         
+      }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        #calculatorColumn {
+            margin: 20px;
+        }
+
+        #subjectSelection {
+            margin-bottom: 10px;
+        }
+
+	.info-container {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .info-container {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .info-content {
+      visibility: hidden;
+      background-color: #f9f9f9;
+      color: #333;
+      text-align: center;
+      border-radius: 6px;
+      padding: 10px;
+      position: absolute;
+      z-index: 1;
+      top: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: visibility 0.3s;
+    }
+    
+    .info-container:hover .info-content {
+      visibility: visible;
+    }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="div1">
+    <h2>Select Major Subject:</h2>
+
+    <select id="subjectSelection" onchange="updateCredits()">
+        <option value="Maths">Maths</option>
+        <option value="Physics">Physics</option>
+        <option value="Biology">Biology</option>
+        <option value="Chemistry">Chemistry</option>
+        <option value="Earth Science">Earth Science</option>
+    </select>
+
+    <h2>SGPA and Credits Input</h2>
+
+    <table id="sgpaTable">
+        <tr>
+            <th>Semester</th>
+            <th>
+		SGPA
+		<div class="info-container">
+    			<button>ℹ️</button>
+    			<div class="info-content">
+				Enter your SGPA for each semester in the respective row.
+    			</div>
+    		</div>
+	    </th>
+            <th>Credits</th>
+        </tr>
+        <script>
+            	    let totalCreds = 0;
+	    let lastCred = 0;
+	    let curCGPACred = 0;
+            function calculateCGPA() {
+                let totalCGPA = 0;
+                let totalCredits = 0;
+
+                for (let i = 0; i < 9; i++) {
+                    let sgpaInput = document.getElementById('sgpa' + i);
+                    let creditsInput = document.getElementById('credits' + i);
+
+                    let sgpa = parseFloat(sgpaInput.value) || 0;
+                    let credits = parseInt(creditsInput.value) || 0;
+
+                    totalCGPA += sgpa * credits;
+                    totalCredits += credits;
+                }
+
+                if (totalCredits > 0) {
+                    let cgpa = totalCGPA / totalCredits;
+		    curCGPACred = totalCGPA
+                    document.getElementById('currentCGPA').innerText = 'Current CGPA: ' + cgpa.toPrecision(4);
+                }
+		totalCreds = totalCredits + parseInt(document.getElementById('credits' + 9).value)
+		lastCred = parseInt(document.getElementById('credits' + 9).value)
+            }
+
+            
+            for (let i = 0; i < 10; i++) {
+                document.write('<tr>');
+                document.write('<td>' + (i + 1) + '</td>');
+                document.write('<td><input type="text" id="sgpa' + i + '" placeholder="SGPA" oninput="calculateCGPA()"></td>');
+                document.write('<td><input type="text" id="credits' + i + '" placeholder="Credits"></td>');
+                document.write('</tr>');
+            }
+
+          
+            document.addEventListener('DOMContentLoaded', function () {
+                for (let i = 0; i < 10; i++) {
+                    let sgpaInput = document.getElementById('sgpa' + i);
+                    let creditsInput = document.getElementById('credits' + i);
+
+                    sgpaInput.value = localStorage.getItem('sgpa' + i) || '';
+                    creditsInput.value = localStorage.getItem('credits' + i) || '';
+                }
+
+                calculateCGPA(); // Recalculate CGPA on page load
+            });
+
+            
+            for (let i = 0; i < 10; i++) {
+                let sgpaInput = document.getElementById('sgpa' + i);
+                let creditsInput = document.getElementById('credits' + i);
+
+                sgpaInput.addEventListener('input', function () {
+                    localStorage.setItem('sgpa' + i, sgpaInput.value);
+                });
+
+                creditsInput.addEventListener('input', function () {
+                    localStorage.setItem('credits' + i, creditsInput.value);
+                    calculateCGPA(); // Recalculate CGPA on credits input
+                });
+            }
+	    
+
+            function calculateRequiredSGPA() {
+                let desiredCGPA = parseFloat(document.getElementById('desiredCGPA').value) || 0;
+
+                if (totalCreds > 0) {
+                    let requiredSGPA = ((desiredCGPA * (totalCreds)) - curCGPACred) / lastCred;
+                    document.getElementById('requiredSGPA').innerText = 'Required SGPA: ' + requiredSGPA.toFixed(2);
+                }
+            }
+
+            function calculateRequiredCGPA() {
+                let expectedSGPA = parseFloat(document.getElementById('expectedSGPA').value) || 0;
+
+                if (totalCreds > 0) {
+                    let expectedCGPA = (curCGPACred + lastCred * expectedSGPA) / (totalCreds);
+                    document.getElementById('expectedCGPA').innerText = 'Expected CGPA: ' + expectedCGPA.toFixed(2);
+                }
+            }
+
+            function updateCredits() {
+                var subject = document.getElementById("subjectSelection").value;
+
+                for (let i = 0; i < 9; i++) {
+                    var credits = document.getElementById("credits" + i);
+
+                    switch (subject) {
+                        case "Maths":
+                            if (i<2) {
+                                credits.value = "29";
+                            } else if(i===2){
+                                credits.value = "24";
+                            } else if(i===3){
+                                credits.value = "27";
+                            } else {
+                                credits.value = "20";
+                            }
+
+                            break;
+                        case "Physics":
+                        case "Biology":
+                        case "Chemistry":
+                        case "Earth Science":
+                            if (i<2) {
+                                credits.value = "29";
+                            } else if(i===2){
+                                credits.value = "24";
+                            } else if(i===3){
+                                credits.value = "27";
+                            } else {
+                                credits.value = "24";
+                            }
+
+                            break;
+                        default:
+                            credits.value = "";
+                            break;
+                    }
+                }
+
+                calculateCGPA();
+            }
+        </script>
+    </table>
+    </div>
+
+    <div id="calculatorColumn">
+        <h2 id="currentCGPA">Current CGPA: </h2>
+
+        <h2>Calculate Required SGPA</h2>
+	<div class="info-container">
+    	    <button>ℹ️</button>
+    	    <div class="info-content">
+		Enter the total CGPA that you want.
+    	    </div>
+    	</div>
+        <label for="desiredCGPA">Desired CGPA:</label>
+	
+
+        <input type="text" id="desiredCGPA" placeholder="Enter Desired CGPA" oninput="calculateRequiredSGPA()">
+	<p/>
+	<div class="info-container">
+    	    <button>ℹ️</button>
+    	    <div class="info-content">
+		This is the SGPA that you require in the last sem.
+    	    </div>
+    	</div>
+
+        <label id="requiredSGPA">Required SGPA: </label>
+
+        <h2>Calculate Expected CGPA</h2>
+	<div class="info-container">
+    	    <button>ℹ️</button>
+    	    <div class="info-content">
+		Enter the Expected SGPA for last sem.
+    	    </div>
+    	</div>
+
+        <label for="expectedSGPA">Expected SGPA:</label>
+        <input type="text" id="expectedSGPA" placeholder="Enter Expected SGPA" oninput="calculateRequiredCGPA()">
+	<p/>
+	<div class="info-container">
+    	    <button>ℹ️</button>
+    	    <div class="info-content">
+		This is the CGPA that you'll get.
+    	    </div>
+    	</div>
+
+        <label id="expectedCGPA">Expected CGPA: </p>
+    </div>
+
+
+</body>
+</html>
